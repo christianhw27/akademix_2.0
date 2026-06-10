@@ -394,7 +394,7 @@
                                             <div class="item-meta">
                                                 <span>Guru: {{ $material->teacher->user->full_name }}</span>
                                                 <span>&bull;</span>
-                                                <span>Rilis: {{ $material->created_at->format('d M Y H:i') }}</span>
+                                                <span>Rilis: {{ $material->created_at ? $material->created_at->format('d M Y H:i') : '-' }}</span>
                                             </div>
                                         </div>
                                     </div>

@@ -63,7 +63,7 @@
                             </td>
                             <td><span class="badge badge-primary">{{ $material->classroom->name }}</span></td>
                             <td style="font-weight: 500;">{{ $material->subject->subject_name }}</td>
-                            <td>{{ $material->created_at->format('d M Y H:i') }}</td>
+                            <td>{{ $material->created_at ? $material->created_at->format('d M Y H:i') : '-' }}</td>
                             <td style="text-align: right; padding-right: 2rem;">
                                 <div style="display: inline-flex; gap: 0.5rem; align-items: center;">
                                     <a href="{{ route('teacher.materials.edit', $material->id) }}" class="btn btn-warning btn-sm">Edit</a>

@@ -14,8 +14,16 @@ use App\Models\AttendanceRecord;
 use App\Models\Grade;
 use Carbon\Carbon;
 
+/**
+ * Controller untuk mengelola fitur-fitur pemantauan yang dapat diakses oleh Orang Tua (Guardian).
+ */
 class ParentController extends Controller
 {
+    /**
+     * Mengambil data siswa (anak) yang sedang aktif dipantau dalam session.
+     *
+     * @return \App\Models\Student|null
+     */
     protected function getActiveStudent()
     {
         $studentId = session('active_student_id');
@@ -34,6 +42,11 @@ class ParentController extends Controller
         return Student::find($studentId);
     }
 
+    /**
+     * Menampilkan dashboard pemantauan orang tua (profil anak, jadwal pelajaran, nilai rata-rata, dan kehadiran).
+     *
+     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
+     */
     public function dashboard()
     {
         $student = $this->getActiveStudent();
@@ -95,6 +108,12 @@ class ParentController extends Controller
         return view('parent.dashboard', compact('student', 'activeYear', 'classroom', 'schedules', 'stats'));
     }
 
+    /**
+     * Menampilkan riwayat presensi bulanan anak dalam bentuk kalender akademik orang tua.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
+     */
     public function attendance(Request $request)
     {
         $student = $this->getActiveStudent();
@@ -139,7 +158,7 @@ class ParentController extends Controller
                         $q->where('classroom_id', $classroom->id)
                           ->whereBetween('attendance_date', [$startOfMonth->toDateString(), $endOfMonth->toDateString()]);
                     })
-                    ->with('session')
+                    ->with(['session.subject', 'session.teacher'])
                     ->get();
 
                 // Group by day of month
@@ -207,12 +226,17 @@ class ParentController extends Controller
         }
 
         return view('parent.attendance', compact(
-            'student', 'classroom', 'activeYear', 'calendarWeeks', 'dailyStatuses', 
+            'student', 'classroom', 'activeYear', 'calendarWeeks', 'dailyStatuses', 'recordsByDay',
             'summary', 'displayMonthName', 'year', 'month', 
             'prevMonth', 'prevYear', 'nextMonth', 'nextYear'
         ));
     }
 
+    /**
+     * Menampilkan daftar materi dan tugas anak yang dikelompokkan berdasarkan mata pelajaran.
+     *
+     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
+     */
     public function assignments()
     {
         $student = $this->getActiveStudent();
@@ -265,6 +289,11 @@ class ParentController extends Controller
         return view('parent.assignments', compact('student', 'classroom', 'activeYear', 'subjects', 'submissions'));
     }
 
+    /**
+     * Menampilkan daftar nilai rapor akademik anak yang diperoleh selama sekolah.
+     *
+     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
+     */
     public function grades()
     {
         $student = $this->getActiveStudent();

@@ -15,8 +15,16 @@ use App\Models\Grade;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
+/**
+ * Controller untuk mengelola fitur-fitur yang dapat diakses oleh Siswa.
+ */
 class StudentController extends Controller
 {
+    /**
+     * Mengambil profil siswa yang sedang login atau dari session anak aktif (jika diakses orang tua).
+     *
+     * @return \App\Models\Student|null
+     */
     protected function getStudentProfile()
     {
         $user = auth()->user();
@@ -31,6 +39,11 @@ class StudentController extends Controller
         return null;
     }
 
+    /**
+     * Menampilkan dashboard utama siswa (jadwal hari ini dan statistik kehadiran).
+     *
+     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
+     */
     public function dashboard()
     {
         $student = $this->getStudentProfile();
@@ -95,6 +108,12 @@ class StudentController extends Controller
         return view('student.dashboard', compact('student', 'activeYear', 'classroom', 'todaySchedules', 'todayName', 'stats'));
     }
 
+    /**
+     * Menampilkan jadwal pelajaran lengkap siswa dalam satu semester.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
+     */
     public function materials(Request $request)
     {
         $student = $this->getStudentProfile();
@@ -120,6 +139,12 @@ class StudentController extends Controller
         return view('student.materials.index', compact('student', 'activeYear', 'classroom', 'schedulesByDay'));
     }
 
+    /**
+     * Menampilkan halaman detail materi pembelajaran yang dibagikan guru.
+     *
+     * @param  \App\Models\Material  $material
+     * @return \Illuminate\View\View
+     */
     public function viewMaterial(Material $material)
     {
         $student = $this->getStudentProfile();
@@ -133,6 +158,11 @@ class StudentController extends Controller
         return view('student.materials.show', compact('material', 'student'));
     }
 
+    /**
+     * Menampilkan halaman daftar materi dan tugas yang dikelompokkan per mata pelajaran.
+     *
+     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
+     */
     public function assignments()
     {
         $student = $this->getStudentProfile();
@@ -185,6 +215,12 @@ class StudentController extends Controller
         return view('student.assignments.index', compact('student', 'classroom', 'activeYear', 'subjects', 'submissions'));
     }
 
+    /**
+     * Menampilkan halaman detail tugas dan status pengumpulan siswa.
+     *
+     * @param  \App\Models\Assignment  $assignment
+     * @return \Illuminate\View\View
+     */
     public function viewAssignment(Assignment $assignment)
     {
         $student = $this->getStudentProfile();
@@ -202,6 +238,13 @@ class StudentController extends Controller
         return view('student.assignments.show', compact('assignment', 'submission', 'student'));
     }
 
+    /**
+     * Memproses pengumpulan tugas dari siswa (unggah jawaban/file).
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\Assignment  $assignment
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function submitAssignment(Request $request, Assignment $assignment)
     {
         $student = $this->getStudentProfile();
@@ -261,6 +304,12 @@ class StudentController extends Controller
         return redirect()->route('student.assignments.show', $assignment->id)->with('success', 'Tugas berhasil dikumpulkan.');
     }
 
+    /**
+     * Menampilkan halaman riwayat presensi bulanan siswa dalam bentuk kalender.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
+     */
     public function attendance(Request $request)
     {
         $student = $this->getStudentProfile();
@@ -379,6 +428,11 @@ class StudentController extends Controller
         ));
     }
 
+    /**
+     * Menampilkan daftar nilai rapor akademik yang diperoleh siswa.
+     *
+     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
+     */
     public function grades()
     {
         $student = $this->getStudentProfile();

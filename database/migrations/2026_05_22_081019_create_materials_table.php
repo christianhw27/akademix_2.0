@@ -19,6 +19,7 @@ return new class extends Migration
             $table->foreignId('academic_year_id')->constrained('academic_years')->restrictOnDelete()->cascadeOnUpdate();
             $table->string('title', 150);
             $table->text('content');
+            $table->string('attachment')->nullable();
             $table->timestamps();
         });
     }

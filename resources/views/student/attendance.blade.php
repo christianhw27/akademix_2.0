@@ -240,6 +240,7 @@
     .calendar-cell.status-hadir {
         background: #e6fdf5;
         border-color: #a7f3d0;
+        border-left: 4px solid #10b981;
     }
     .calendar-cell.status-hadir .cell-status-label {
         background: #10b981;
@@ -249,6 +250,7 @@
     .calendar-cell.status-sebagian {
         background: #fffbeb;
         border-color: #fde68a;
+        border-left: 4px solid #f59e0b;
     }
     .calendar-cell.status-sebagian .cell-status-label {
         background: #d97706;
@@ -258,6 +260,7 @@
     .calendar-cell.status-tidak-hadir {
         background: #fef2f2;
         border-color: #fca5a5;
+        border-left: 4px solid #ef4444;
     }
     .calendar-cell.status-tidak-hadir .cell-status-label {
         background: #ef4444;
@@ -267,6 +270,7 @@
     .calendar-cell.status-libur {
         background: #f1f5f9;
         border-color: #e2e8f0;
+        border-left: 4px solid #64748b;
     }
     .calendar-cell.status-libur .day-num {
         color: #94a3b8;
@@ -357,6 +361,19 @@
         <p style="font-size: 14px;">Tidak ada data kehadiran yang dapat ditampilkan karena Anda belum terdaftar di kelas manapun.</p>
     </div>
 @else
+    @php
+        $statusCounts = [
+            'HADIR PENUH' => 0,
+            'SEBAGIAN' => 0,
+            'TIDAK HADIR' => 0,
+            'LIBUR' => 0,
+        ];
+        foreach ($dailyStatuses as $d => $stat) {
+            if ($stat) {
+                $statusCounts[$stat] = ($statusCounts[$stat] ?? 0) + 1;
+            }
+        }
+    @endphp
     <div class="calendar-card">
         <div class="calendar-ctrl-header">
             <h3 class="calendar-month-title">{{ $displayMonthName }}</h3>
@@ -403,7 +420,37 @@
                         <div class="calendar-cell {{ $cellClass }}">
                             <span class="day-num">{{ $day }}</span>
                             @if($status)
-                                <span class="cell-status-label">{{ $status }}</span>
+                                @if($status === 'LIBUR')
+                                    <span class="cell-status-label">{{ $status }}</span>
+                                @elseif($status === 'HADIR PENUH')
+                                    <span class="cell-status-label">{{ $status }}</span>
+                                    <span style="font-size: 10px; color: #047857; font-weight: 700; margin-top: auto; text-align: center;">
+                                        {{ $dayRecords->where('status', 'hadir')->count() }}/{{ $dayRecords->count() }} Sesi
+                                    </span>
+                                @elseif($status === 'SEBAGIAN')
+                                    <span class="cell-status-label">{{ $status }}</span>
+                                    <span style="font-size: 10px; color: #b45309; font-weight: 700; margin-top: auto; text-align: center; display: flex; flex-direction: column; line-height: 1.15; gap: 2px;">
+                                        <span>{{ $dayRecords->where('status', 'hadir')->count() }} Hadir</span>
+                                        <span>
+                                            @php
+                                                $excuses = [];
+                                                $izinC = $dayRecords->where('status', 'izin')->count();
+                                                $sakitC = $dayRecords->where('status', 'sakit')->count();
+                                                if ($izinC > 0) $excuses[] = "$izinC Izin";
+                                                if ($sakitC > 0) $excuses[] = "$sakitC Sakit";
+                                            @endphp
+                                            {{ implode(', ', $excuses) }}
+                                        </span>
+                                    </span>
+                                @elseif($status === 'TIDAK HADIR')
+                                    <span class="cell-status-label">{{ $status }}</span>
+                                    <span style="font-size: 10px; color: #b91c1c; font-weight: 700; margin-top: auto; text-align: center; display: flex; flex-direction: column; line-height: 1.15; gap: 2px;">
+                                        <span>{{ $dayRecords->where('status', 'alpha')->count() }} Alpha</span>
+                                        @if($dayRecords->where('status', 'hadir')->count() > 0)
+                                            <span>{{ $dayRecords->where('status', 'hadir')->count() }} Hadir</span>
+                                        @endif
+                                    </span>
+                                @endif
                             @endif
 
                             @if($dayRecords->isNotEmpty())
@@ -442,20 +489,20 @@
         <!-- Legend -->
         <div class="calendar-legend">
             <div class="legend-item">
-                <div class="legend-color" style="background: #e6fdf5; border-color: #a7f3d0;"></div>
-                <span>Hadir Penuh</span>
+                <div class="legend-color" style="background: #e6fdf5; border-color: #a7f3d0; border-left: 3px solid #10b981;"></div>
+                <span>Hadir Penuh ({{ $statusCounts['HADIR PENUH'] }} Hari)</span>
             </div>
             <div class="legend-item">
-                <div class="legend-color" style="background: #fffbeb; border-color: #fde68a;"></div>
-                <span>Izin / Sakit (Sebagian)</span>
+                <div class="legend-color" style="background: #fffbeb; border-color: #fde68a; border-left: 3px solid #f59e0b;"></div>
+                <span>Izin / Sakit (Sebagian) ({{ $statusCounts['SEBAGIAN'] }} Hari)</span>
             </div>
             <div class="legend-item">
-                <div class="legend-color" style="background: #fef2f2; border-color: #fca5a5;"></div>
-                <span>Alpha (Tidak Hadir)</span>
+                <div class="legend-color" style="background: #fef2f2; border-color: #fca5a5; border-left: 3px solid #ef4444;"></div>
+                <span>Alpha (Tidak Hadir) ({{ $statusCounts['TIDAK HADIR'] }} Hari)</span>
             </div>
             <div class="legend-item">
-                <div class="legend-color" style="background: #f1f5f9; border-color: #e2e8f0;"></div>
-                <span>Hari Libur</span>
+                <div class="legend-color" style="background: #f1f5f9; border-color: #e2e8f0; border-left: 3px solid #64748b;"></div>
+                <span>Hari Libur ({{ $statusCounts['LIBUR'] }} Hari)</span>
             </div>
         </div>
     </div>

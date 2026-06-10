@@ -15,11 +15,10 @@ Route::get('/', function () {
                 'parent' => redirect()->route('parent.dashboard'),
             };
         }
-        
         Auth::logout();
         return redirect('/login')->withErrors('Role tidak dikenal.');
     }
-    return redirect('/login');
+    return view('landing');
 });
 
 Route::middleware('guest')->group(function () {
@@ -28,6 +27,20 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
+    Route::get('/dashboard', function () {
+        $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('login');
+        }
+        return match ($user->role) {
+            'admin' => redirect()->route('admin.dashboard'),
+            'teacher' => redirect()->route('teacher.dashboard'),
+            'student' => redirect()->route('student.dashboard'),
+            'parent' => redirect()->route('parent.dashboard'),
+            default => redirect('/login')->withErrors('Role tidak dikenal.'),
+        };
+    })->name('dashboard');
+
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     // Admin Routes

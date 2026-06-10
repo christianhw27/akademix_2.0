@@ -15,8 +15,21 @@ class RoleMiddleware
      */
     public function handle(Request $request, Closure $next, $role): Response
     {
-        if ($request->user() && $request->user()->role === $role) {
-            return $next($request);
+        $user = $request->user();
+        if ($user) {
+            if ($role === 'parent') {
+                if ($user->role === 'parent' || ($user->role === 'student' && session('is_parent'))) {
+                    return $next($request);
+                }
+            } elseif ($role === 'student') {
+                if ($user->role === 'student' && !session('is_parent')) {
+                    return $next($request);
+                }
+            } else {
+                if ($user->role === $role) {
+                    return $next($request);
+                }
+            }
         }
         abort(403, 'Unauthorized action.');
     }

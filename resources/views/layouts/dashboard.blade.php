@@ -365,9 +365,17 @@
                 </button>
                 <!-- User Text Info -->
                 <div style="text-align: right; line-height: 1.2;">
-                    <div style="font-weight: 600; font-size: 14px; color: var(--on-surface);">{{ Auth::user()->full_name }}</div>
+                    <div style="font-weight: 600; font-size: 14px; color: var(--on-surface);">
+                        @if(session('is_parent'))
+                            Orang Tua {{ Auth::user()->full_name }}
+                        @else
+                            {{ Auth::user()->full_name }}
+                        @endif
+                    </div>
                     <div style="font-size: 11px; color: var(--on-surface-variant); font-weight: 500;">
-                        @if(Auth::user()->role === 'parent')
+                        @if(session('is_parent'))
+                            Orang Tua
+                        @elseif(Auth::user()->role === 'parent')
                             Orang Tua
                         @elseif(Auth::user()->role === 'student')
                             Siswa
@@ -380,7 +388,11 @@
                 </div>
                 <!-- User Profile Initials Avatar -->
                 <div style="width: 36px; height: 36px; border-radius: 50%; background: #2e446e; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                    {{ strtoupper(substr(Auth::user()->full_name, 0, 1)) }}
+                    @if(session('is_parent'))
+                        OT
+                    @else
+                        {{ strtoupper(substr(Auth::user()->full_name, 0, 1)) }}
+                    @endif
                 </div>
             </div>
         </header>

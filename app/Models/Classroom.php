@@ -17,7 +17,13 @@ class Classroom extends Model
     public function getNameAttribute()
     {
         $className = $this->studyClass ? $this->studyClass->name : '';
-        return $this->grade_level ? $this->grade_level . ' ' . $className : $className;
+        $romanGrades = [
+            10 => 'X',
+            11 => 'XI',
+            12 => 'XII',
+        ];
+        $gradeLabel = $romanGrades[$this->grade_level] ?? $this->grade_level;
+        return $gradeLabel ? $gradeLabel . ' ' . $className : $className;
     }
 
 }

@@ -10,8 +10,16 @@ use App\Models\Material;
 use App\Models\Assignment;
 use App\Models\AssignmentSubmission;
 
+/**
+ * Controller untuk mengelola dashboard utama Guru.
+ */
 class TeacherController extends Controller
 {
+    /**
+     * Menampilkan dashboard utama guru (jadwal mengajar, status wali kelas, dan statistik kelas).
+     *
+     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
+     */
     public function dashboard()
     {
         $user = auth()->user();

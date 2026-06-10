@@ -26,20 +26,7 @@ class User extends Authenticatable
     public function student() { return $this->hasOne(Student::class); }
     public function guardian() { return $this->hasOne(Guardian::class); }
     
-    public function getAuthPassword()
-    {
-        return $this->password_hash;
-    }
-
-    public function getPasswordAttribute()
-    {
-        return $this->password_hash;
-    }
-
-    public function setPasswordAttribute($value)
-    {
-        $this->attributes['password_hash'] = $value;
-    }
+    // No custom password overrides needed as Laravel defaults to the 'password' column.
 
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;

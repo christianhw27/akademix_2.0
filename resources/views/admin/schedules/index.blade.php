@@ -25,7 +25,7 @@
                     <option value="">-- Pilih Kelas --</option>
                     @foreach($classrooms as $cr)
                         <option value="{{ $cr->id }}" {{ $selectedClassroomId == $cr->id ? 'selected' : '' }}>
-                            {{ $cr->studyClass->name }} - T.A {{ $cr->academicYear->year_label }} ({{ ucfirst($cr->academicYear->semester) }})
+                            {{ $cr->name }} - T.A {{ $cr->academicYear->year_label }} ({{ ucfirst($cr->academicYear->semester) }})
                         </option>
                     @endforeach
                 </select>

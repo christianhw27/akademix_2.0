@@ -383,7 +383,7 @@
                                             <div class="item-meta">
                                                 <span>Guru: {{ $material->teacher->user->full_name }}</span>
                                                 <span>&bull;</span>
-                                                <span>Rilis: {{ $material->created_at->format('d M Y H:i') }}</span>
+                                                <span>Rilis: {{ $material->created_at ? $material->created_at->format('d M Y H:i') : '-' }}</span>
                                             </div>
                                         </div>
                                         <a href="{{ route('student.materials.show', $material->id) }}" class="btn btn-primary btn-sm" style="white-space: nowrap; flex-shrink: 0;">

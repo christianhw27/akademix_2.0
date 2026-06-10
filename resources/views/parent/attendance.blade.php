@@ -133,6 +133,76 @@
         justify-content: space-between;
         background: white;
         transition: all 0.2s ease;
+        position: relative;
+    }
+    
+    /* Day Details Tooltip */
+    .day-details-tooltip {
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%) translateY(-10px);
+        background: white;
+        border: 1px solid var(--outline);
+        border-radius: var(--radius);
+        padding: 0.75rem;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        width: max-content;
+        min-width: 200px;
+        max-width: 280px;
+        z-index: 50;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.2s ease;
+        pointer-events: none;
+    }
+    
+    .day-details-tooltip::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        margin-left: -6px;
+        border-width: 6px;
+        border-style: solid;
+        border-color: white transparent transparent transparent;
+    }
+    .day-details-tooltip::before {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        margin-left: -7px;
+        border-width: 7px;
+        border-style: solid;
+        border-color: var(--outline) transparent transparent transparent;
+    }
+    
+    .calendar-cell:hover .day-details-tooltip {
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(-50%) translateY(-5px);
+    }
+    
+    .tooltip-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.4rem 0;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 11px;
+    }
+    .tooltip-item:last-child {
+        border-bottom: none;
+    }
+    .tooltip-subject {
+        font-weight: 600;
+        color: var(--on-surface);
+    }
+    .tooltip-time {
+        color: var(--on-surface-variant);
+        font-size: 10px;
     }
 
     .calendar-cell:hover:not(.empty-cell) {
@@ -170,6 +240,7 @@
     .calendar-cell.status-hadir {
         background: #e6fdf5;
         border-color: #a7f3d0;
+        border-left: 4px solid #10b981;
     }
     .calendar-cell.status-hadir .cell-status-label {
         background: #10b981;
@@ -179,6 +250,7 @@
     .calendar-cell.status-sebagian {
         background: #fffbeb;
         border-color: #fde68a;
+        border-left: 4px solid #f59e0b;
     }
     .calendar-cell.status-sebagian .cell-status-label {
         background: #d97706;
@@ -188,6 +260,7 @@
     .calendar-cell.status-tidak-hadir {
         background: #fef2f2;
         border-color: #fca5a5;
+        border-left: 4px solid #ef4444;
     }
     .calendar-cell.status-tidak-hadir .cell-status-label {
         background: #ef4444;
@@ -197,6 +270,7 @@
     .calendar-cell.status-libur {
         background: #f1f5f9;
         border-color: #e2e8f0;
+        border-left: 4px solid #64748b;
     }
     .calendar-cell.status-libur .day-num {
         color: #94a3b8;
@@ -278,7 +352,6 @@
         <div class="value">{{ $summary['alpha'] }}</div>
     </div>
 </div>
-
 {{-- Calendar Card --}}
 @if(!$classroom)
     <div class="card" style="padding: 3rem 1.5rem; text-align: center; color: var(--on-surface-variant);">
@@ -287,6 +360,19 @@
         <p style="font-size: 14px;">Anak Anda belum terdaftar di kelas aktif mana pun.</p>
     </div>
 @else
+    @php
+        $statusCounts = [
+            'HADIR PENUH' => 0,
+            'SEBAGIAN' => 0,
+            'TIDAK HADIR' => 0,
+            'LIBUR' => 0,
+        ];
+        foreach ($dailyStatuses as $d => $stat) {
+            if ($stat) {
+                $statusCounts[$stat] = ($statusCounts[$stat] ?? 0) + 1;
+            }
+        }
+    @endphp
     <div class="calendar-card">
         <div class="calendar-ctrl-header">
             <h3 class="calendar-month-title">{{ $displayMonthName }}</h3>
@@ -318,6 +404,7 @@
                     @else
                         @php
                             $status = $dailyStatuses[$day] ?? null;
+                            $dayRecords = isset($recordsByDay) && $recordsByDay->has($day) ? $recordsByDay->get($day) : collect();
                             $cellClass = '';
                             if ($status === 'HADIR PENUH') {
                                 $cellClass = 'status-hadir';
@@ -332,7 +419,65 @@
                         <div class="calendar-cell {{ $cellClass }}">
                             <span class="day-num">{{ $day }}</span>
                             @if($status)
-                                <span class="cell-status-label" title="{{ $status }}">{{ $status }}</span>
+                                @if($status === 'LIBUR')
+                                    <span class="cell-status-label">{{ $status }}</span>
+                                @elseif($status === 'HADIR PENUH')
+                                    <span class="cell-status-label">{{ $status }}</span>
+                                    <span style="font-size: 10px; color: #047857; font-weight: 700; margin-top: auto; text-align: center;">
+                                        {{ $dayRecords->where('status', 'hadir')->count() }}/{{ $dayRecords->count() }} Sesi
+                                    </span>
+                                @elseif($status === 'SEBAGIAN')
+                                    <span class="cell-status-label">{{ $status }}</span>
+                                    <span style="font-size: 10px; color: #b45309; font-weight: 700; margin-top: auto; text-align: center; display: flex; flex-direction: column; line-height: 1.15; gap: 2px;">
+                                        <span>{{ $dayRecords->where('status', 'hadir')->count() }} Hadir</span>
+                                        <span>
+                                            @php
+                                                $excuses = [];
+                                                $izinC = $dayRecords->where('status', 'izin')->count();
+                                                $sakitC = $dayRecords->where('status', 'sakit')->count();
+                                                if ($izinC > 0) $excuses[] = "$izinC Izin";
+                                                if ($sakitC > 0) $excuses[] = "$sakitC Sakit";
+                                            @endphp
+                                            {{ implode(', ', $excuses) }}
+                                        </span>
+                                    </span>
+                                @elseif($status === 'TIDAK HADIR')
+                                    <span class="cell-status-label">{{ $status }}</span>
+                                    <span style="font-size: 10px; color: #b91c1c; font-weight: 700; margin-top: auto; text-align: center; display: flex; flex-direction: column; line-height: 1.15; gap: 2px;">
+                                        <span>{{ $dayRecords->where('status', 'alpha')->count() }} Alpha</span>
+                                        @if($dayRecords->where('status', 'hadir')->count() > 0)
+                                            <span>{{ $dayRecords->where('status', 'hadir')->count() }} Hadir</span>
+                                        @endif
+                                    </span>
+                                @endif
+                            @endif
+
+                            @if($dayRecords->isNotEmpty())
+                                <div class="day-details-tooltip">
+                                    <div style="font-size: 12px; font-weight: 700; color: var(--primary); margin-bottom: 0.5rem; border-bottom: 1px solid var(--outline); padding-bottom: 0.35rem;">
+                                        Detail Kehadiran ({{ $day }} {{ $displayMonthName }})
+                                    </div>
+                                    @foreach($dayRecords as $record)
+                                        @php
+                                            $recordStatusColor = match($record->status) {
+                                                'hadir' => '#10b981',
+                                                'izin' => '#d97706',
+                                                'sakit' => '#0891b2',
+                                                'alpha' => '#ef4444',
+                                                default => '#64748b'
+                                            };
+                                        @endphp
+                                        <div class="tooltip-item">
+                                            <div style="text-align: left;">
+                                                <div class="tooltip-subject">{{ $record->session->subject->name ?? 'Pelajaran' }}</div>
+                                                <div class="tooltip-time">{{ \Carbon\Carbon::parse($record->session->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($record->session->end_time)->format('H:i') }}</div>
+                                            </div>
+                                            <span style="background: {{ $recordStatusColor }}20; color: {{ $recordStatusColor }}; padding: 0.2rem 0.45rem; border-radius: 4px; font-weight: 700; font-size: 9px; text-transform: uppercase;">
+                                                {{ $record->status }}
+                                            </span>
+                                        </div>
+                                    @endforeach
+                                </div>
                             @endif
                         </div>
                     @endif
@@ -343,20 +488,20 @@
         <!-- Legend -->
         <div class="calendar-legend">
             <div class="legend-item">
-                <div class="legend-color" style="background: #e6fdf5; border-color: #a7f3d0;"></div>
-                <span>Hadir Penuh</span>
+                <div class="legend-color" style="background: #e6fdf5; border-color: #a7f3d0; border-left: 3px solid #10b981;"></div>
+                <span>Hadir Penuh ({{ $statusCounts['HADIR PENUH'] }} Hari)</span>
             </div>
             <div class="legend-item">
-                <div class="legend-color" style="background: #fffbeb; border-color: #fde68a;"></div>
-                <span>Izin / Sakit (Sebagian)</span>
+                <div class="legend-color" style="background: #fffbeb; border-color: #fde68a; border-left: 3px solid #f59e0b;"></div>
+                <span>Izin / Sakit (Sebagian) ({{ $statusCounts['SEBAGIAN'] }} Hari)</span>
             </div>
             <div class="legend-item">
-                <div class="legend-color" style="background: #fef2f2; border-color: #fca5a5;"></div>
-                <span>Alpha (Tidak Hadir)</span>
+                <div class="legend-color" style="background: #fef2f2; border-color: #fca5a5; border-left: 3px solid #ef4444;"></div>
+                <span>Alpha (Tidak Hadir) ({{ $statusCounts['TIDAK HADIR'] }} Hari)</span>
             </div>
             <div class="legend-item">
-                <div class="legend-color" style="background: #f1f5f9; border-color: #e2e8f0;"></div>
-                <span>Hari Libur</span>
+                <div class="legend-color" style="background: #f1f5f9; border-color: #e2e8f0; border-left: 3px solid #64748b;"></div>
+                <span>Hari Libur ({{ $statusCounts['LIBUR'] }} Hari)</span>
             </div>
         </div>
     </div>

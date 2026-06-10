@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('title', 150);
             $table->text('description');
             $table->dateTime('due_date');
+            $table->string('attachment')->nullable();
             $table->timestamps();
         });
     }

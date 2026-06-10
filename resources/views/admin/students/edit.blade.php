@@ -102,16 +102,6 @@
                     @endforeach
                 </select>
             </div>
-
-            <div class="form-group">
-                <label for="guardian_id" class="form-label">Orang Tua / Wali</label>
-                <select name="guardian_id" id="guardian_id" class="form-select">
-                    <option value="">-- Tidak Ada / Pilih Nanti --</option>
-                    @foreach($guardians as $guardian)
-                        <option value="{{ $guardian->id }}" {{ old('guardian_id', $student->guardian_id) == $guardian->id ? 'selected' : '' }}>{{ $guardian->user->full_name }} ({{ $guardian->phone ?: 'No telp -' }})</option>
-                    @endforeach
-                </select>
-            </div>
         </div>
 
         <div class="form-row">

@@ -20,6 +20,7 @@ return new class extends Migration
             $table->dateTime('submitted_at')->nullable();
             $table->decimal('score', 5, 2)->nullable();
             $table->text('feedback')->nullable();
+            $table->text('attachment')->nullable();
             $table->unique(['assignment_id', 'student_id']);
             $table->timestamps();
         });

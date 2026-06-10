@@ -45,8 +45,8 @@
 
 
     <div style="margin-top: 4rem; border-top: 1px solid var(--outline); padding-top: 1.5rem; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--on-surface-variant);">
-        <span>Diterbitkan pada: {{ $material->created_at->format('d M Y, H:i') }}</span>
-        <span>Terakhir diperbarui: {{ $material->updated_at->format('d M Y, H:i') }}</span>
+        <span>Diterbitkan pada: {{ $material->created_at ? $material->created_at->format('d M Y, H:i') : '-' }}</span>
+        <span>Terakhir diperbarui: {{ $material->updated_at ? $material->updated_at->format('d M Y, H:i') : '-' }}</span>
     </div>
 </div>
 @endsection
